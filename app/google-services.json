@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "825042131912",
+    "project_id": "invernaderoapp-bab05",
+    "storage_bucket": "invernaderoapp-bab05.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825042131912:android:86f39d5e6cff81ca26fefd",
+        "android_client_info": {
+          "package_name": "com.example.trabajo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0B3wyqQhpeeTNHbOkINDCNwYuy0p7MdA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

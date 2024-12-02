@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">InvernaderoApp</string>
+    <string name="msj_1">¡Bienvenido al gestor de su invernadero!</string>
+    <string name="opc_sensores">Gestor de sensores</string>
+    <string name="gestor_ubi">Gestionar ubicaciones</string>
+    <string name="registros">Ver registros</string>
+
+    <string name="gestorSensor">Gestión de sensores</string>
+    <string name="snsorNombre">Nombre del sensor</string>
+    <string name="ModeloSensor">Descripción del sensor</string>
+    <string name="buscar">Buscar</string>
+    <string name="modificar">Modificar</string>
+    <string name="eliminar">Eliminar</string>
+    <string name="Ingresar">Ingresar</string>
+
+    <string name="titulo2">Gestor de ubicaciones</string>
+    <string name="UbiIngreso">Ingrese nueva ubicación</string>
+    <string name="Ingreso2">Ingresar</string>
+    <string name="ListaUbic">Lista de ubicaciones ingresadas:</string>
+    <string name="registros1">Registro de los sensores</string>
+    <string name="descripSensor">Descripción de la ubicacion</string>
+    <string name="test1">Valdivia</string>
+    <string name="test2">Panguipulli</string>
+    <string name="testeo3">5614364</string>
+    <string name="testeo4">5263182</string>
+    <string name="UbicacionS">Ubicacion </string>
+    <string name="Ideal">Numero ideal</string>
+    <string name="senHist">Ver sensores agregados</string>
+    <string name="mensajeTitulo">Sensores recientemente agregados:</string>
+    <string name="ubiIngresados">Ubicaciones ingresadas</string>
+
+
+</resources>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".SensorActivity"
+    android:background="@android:color/darker_gray"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/titulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16sp"
+        android:text="@string/gestorSensor"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <EditText
+        android:id="@+id/sensores"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/snsorNombre"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/titulo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buscarSensorButton"
+        app:layout_constraintWidth_percent="0.75" />
+
+
+    <Button
+        android:id="@+id/buscarSensorButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        android:text="@string/buscar"
+        android:backgroundTint="@color/cardview_dark_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/sensores"
+        app:layout_constraintTop_toBottomOf="@id/titulo" />
+
+
+    <EditText
+        android:id="@+id/modeloSensorEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:hint="@string/ModeloSensor"
+        android:inputType="text"
+        android:padding="16sp"
+        app:layout_constraintTop_toBottomOf="@id/sensores"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/idealEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:hint="@string/Ideal"
+        android:inputType="number"
+        android:padding="16sp"
+        app:layout_constraintTop_toBottomOf="@id/modeloSensorEditText" />
+
+    <Spinner
+        android:id="@+id/ubicacionSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:hint="@string/UbicacionS"
+        android:padding="16sp"
+        app:layout_constraintTop_toBottomOf="@id/idealEditText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Spinner
+        android:id="@+id/tipoSensorSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        app:layout_constraintTop_toBottomOf="@id/ubicacionSpinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <Button
+        android:id="@+id/ingresarSensorButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/Ingresar"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ModificarSensorButton"
+        android:backgroundTint="@color/cardview_dark_background"
+        app:layout_constraintTop_toBottomOf="@id/tipoSensorSpinner" />
+
+    <Button
+        android:id="@+id/ModificarSensorButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+
+        android:text="@string/modificar"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        android:backgroundTint="@color/cardview_dark_background"
+        app:layout_constraintStart_toEndOf="@id/ingresarSensorButton"
+        app:layout_constraintEnd_toStartOf="@id/eliminarSensorButton"
+        app:layout_constraintTop_toBottomOf="@id/tipoSensorSpinner" />
+
+    <Button
+        android:id="@+id/eliminarSensorButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/eliminar"
+        android:backgroundTint="@color/cardview_dark_background"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        app:layout_constraintStart_toEndOf="@id/ModificarSensorButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tipoSensorSpinner" />
+
+    <Button
+        android:id="@+id/SensoresHistorial"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/senHist"
+        android:layout_margin="8dp"
+        android:padding="16sp"
+        android:backgroundTint="@color/cardview_dark_background"
+        app:layout_constraintTop_toBottomOf="@id/ingresarSensorButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
