@@ -26,7 +26,6 @@ public class Sensor {
 
     // Constructor adicional que incluye ID
     public Sensor(String id, String nombre, String descripcion, float ideal, String tipoSensor, String ubicacion) {
-        this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.ideal = ideal;

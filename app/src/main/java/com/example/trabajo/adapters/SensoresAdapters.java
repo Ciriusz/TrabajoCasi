@@ -25,8 +25,14 @@ public class SensoresAdapters extends RecyclerView.Adapter<SensoresAdapters.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.activity_recycler_ver_sensores, parent, false);
+                .inflate(R.layout.activity_recycler_ver_sensores, parent, false);  // Asegúrate de que este layout exista
         return new ViewHolder(view);
+    }
+
+    // Actualiza la lista de sensores y notifica al adaptador
+    public void actualizarLista(List<Sensor> nuevosSensores) {
+        this.sensores = nuevosSensores;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -42,6 +48,7 @@ public class SensoresAdapters extends RecyclerView.Adapter<SensoresAdapters.View
         return sensores.size();
     }
 
+    // ViewHolder para la representación del sensor
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textViewNombre;
         private TextView textViewDescripcion;
@@ -49,7 +56,7 @@ public class SensoresAdapters extends RecyclerView.Adapter<SensoresAdapters.View
 
         public ViewHolder(View view) {
             super(view);
-            textViewNombre = view.findViewById(R.id.sensores); //
+            textViewNombre = view.findViewById(R.id.sensores); // Ajusta los IDs si es necesario
             textViewDescripcion = view.findViewById(R.id.modeloSensorEditText);
             textViewIdeal = view.findViewById(R.id.idealEditText);
         }

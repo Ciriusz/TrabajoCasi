@@ -11,16 +11,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.trabajo.adapters.SensoresAdapters;
 import com.example.trabajo.datos.Repositorio;
 import com.example.trabajo.model.Sensor;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
 public class SensorActivity extends AppCompatActivity {
-
     private EditText nombreEditText, descripcionEditText, idealEditText;
     private Button ingresarSensorButton, verSensoresButton, modificarSensorButton, eliminarSensorButton, buscarSensorButton;
     private Spinner spinnerTipoSensor, spinnerUbicacion;
@@ -30,7 +28,6 @@ public class SensorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor);
-
         inicializarComponentes();
         configurarSpinners();
         configurarBotones();
@@ -50,23 +47,15 @@ public class SensorActivity extends AppCompatActivity {
     }
 
     private void configurarSpinners() {
-        // Obtener los tipos de sensores de manera sincrónica
         List<String> tiposSensor = Repositorio.getInstance().obtenerTiposSensor();
-
-        // Configurar el Spinner para tipos de sensor
         ArrayAdapter<String> tipoSensorAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tiposSensor);
         tipoSensorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipoSensor.setAdapter(tipoSensorAdapter);
 
-        // Obtener las ubicaciones de manera asíncrona con un callback
-        Repositorio.getInstance().obtenerUbicaciones(new Repositorio.UbicacionesCallback() {
-            @Override
-            public void onUbicacionesObtenidas(List<String> ubicaciones) {
-                // Actualizar el Spinner de ubicaciones con la lista obtenida
-                ArrayAdapter<String> ubicacionAdapter = new ArrayAdapter<>(SensorActivity.this, android.R.layout.simple_spinner_item, ubicaciones);
-                ubicacionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinnerUbicacion.setAdapter(ubicacionAdapter);
-            }
+        Repositorio.getInstance().obtenerUbicaciones(ubicaciones -> {
+            ArrayAdapter<String> ubicacionAdapter = new ArrayAdapter<>(SensorActivity.this, android.R.layout.simple_spinner_item, ubicaciones);
+            ubicacionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerUbicacion.setAdapter(ubicacionAdapter);
         });
     }
 
@@ -77,6 +66,108 @@ public class SensorActivity extends AppCompatActivity {
         modificarSensorButton.setOnClickListener(v -> modificarSensor());
         eliminarSensorButton.setOnClickListener(v -> eliminarSensor());
     }
+
+    private void validarYGuardarDatosEnFirebase() {
+        String nombre = nombreEditText.getText().toString().trim();
+        String descripcion = descripcionEditText.getText().toString().trim();
+        String idealStr = idealEditText.getText().toString().trim();
+
+        if (!validarNombre(nombre) || !validarDescripcion(descripcion) || !validarIdeal(idealStr)) {
+            return;
+        }
+
+        float ideal = Float.parseFloat(idealStr);
+        String tipoSensor = spinnerTipoSensor.getSelectedItem().toString();
+        String ubicacion = spinnerUbicacion.getSelectedItem().toString();
+
+        Sensor sensor = new Sensor(nombre, descripcion, ideal, tipoSensor, ubicacion);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("sensores").document()
+                .set(sensor.toMap())
+                .addOnSuccessListener(unused -> {
+                    mostrarToast("Sensor agregado correctamente");
+                    Repositorio.getInstance().agregarSensor(sensor); // Notificación al adaptador
+                })
+                .addOnFailureListener(e -> mostrarToast("Error al guardar el sensor: " + e.getMessage()));
+    }
+
+    private void modificarSensor() {
+        if (sensorSeleccionado == null) {
+            mostrarToast("No se ha seleccionado un sensor para modificar");
+            return;
+        }
+
+        String nombre = nombreEditText.getText().toString().trim();
+        String descripcion = descripcionEditText.getText().toString().trim();
+        String idealStr = idealEditText.getText().toString().trim();
+
+        if (!validarNombre(nombre) || !validarDescripcion(descripcion) || !validarIdeal(idealStr)) {
+            return;
+        }
+
+        actualizarSensorSeleccionado(nombre, descripcion, idealStr);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("sensores")
+                .whereEqualTo("nombre", sensorSeleccionado.getNombre())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        db.collection("sensores").document(documentId)
+                                .set(sensorSeleccionado.toMap())
+                                .addOnSuccessListener(aVoid -> {
+                                    mostrarToast("Sensor modificado correctamente");
+                                    Repositorio.getInstance().actualizarSensor(sensorSeleccionado); // Notificación al adaptador
+                                })
+                                .addOnFailureListener(e -> mostrarToast("Error al modificar el sensor: " + e.getMessage()));
+                    } else {
+                        mostrarToast("El sensor no existe en la base de datos.");
+                    }
+                })
+                .addOnFailureListener(e -> mostrarToast("Error al realizar la consulta: " + e.getMessage()));
+    }
+
+    private void eliminarSensor() {
+        if (sensorSeleccionado == null) {
+            mostrarToast("No se ha seleccionado un sensor para eliminar");
+            return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("sensores")
+                .whereEqualTo("nombre", sensorSeleccionado.getNombre())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        db.collection("sensores").document(documentId)
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    mostrarToast("Sensor eliminado correctamente");
+
+                                    // Eliminar del repositorio y notificar cambios
+                                    Repositorio.getInstance().eliminarSensor(sensorSeleccionado);
+                                    resetFormulario(); // Limpiar el formulario
+                                })
+                                .addOnFailureListener(e -> {
+                                    mostrarToast("Error al eliminar el sensor en Firestore");
+                                    e.printStackTrace();
+                                });
+                    } else {
+                        mostrarToast("El sensor no existe en la base de datos.");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    mostrarToast("Error al realizar la consulta en Firestore");
+                    e.printStackTrace();
+                });
+    }
+
 
     private boolean validarNombre(String nombre) {
         if (TextUtils.isEmpty(nombre)) {
@@ -116,30 +207,6 @@ public class SensorActivity extends AppCompatActivity {
         return true;
     }
 
-    private void validarYGuardarDatosEnFirebase() {
-        String nombre = nombreEditText.getText().toString().trim();
-        String descripcion = descripcionEditText.getText().toString().trim();
-        String idealStr = idealEditText.getText().toString().trim();
-
-        if (!validarNombre(nombre) || !validarDescripcion(descripcion) || !validarIdeal(idealStr)) {
-            return;
-        }
-
-        float ideal = Float.parseFloat(idealStr);
-        String tipoSensor = spinnerTipoSensor.getSelectedItem().toString();
-        String ubicacion = spinnerUbicacion.getSelectedItem().toString();
-
-        Sensor sensor = new Sensor(nombre, descripcion, ideal, tipoSensor, ubicacion);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("sensores").document()
-                .set(sensor.toMap())
-                .addOnSuccessListener(unused -> mostrarToast("Sensor agregado correctamente"))
-                .addOnFailureListener(e -> mostrarToast("Error al guardar el sensor: " + e.getMessage()));
-
-        Repositorio.getInstance().agregarSensor(sensor);
-    }
-
     private void buscarSensor() {
         String nombre = nombreEditText.getText().toString().trim();
 
@@ -148,6 +215,7 @@ public class SensorActivity extends AppCompatActivity {
         }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("sensores")
                 .whereEqualTo("nombre", nombre)
                 .get()
@@ -155,8 +223,15 @@ public class SensorActivity extends AppCompatActivity {
                     if (queryDocumentSnapshots.isEmpty()) {
                         mostrarToast("Sensor no encontrado");
                     } else {
+                        // Obtenemos el sensor desde Firestore
                         sensorSeleccionado = queryDocumentSnapshots.getDocuments().get(0).toObject(Sensor.class);
-                        cargarDatosSensorEnFormulario();
+
+                        // Validar que sensorSeleccionado no sea null
+                        if (sensorSeleccionado != null) {
+                            cargarDatosSensorEnFormulario();
+                        } else {
+                            mostrarToast("Error al convertir los datos del sensor");
+                        }
                     }
                 })
                 .addOnFailureListener(e -> mostrarToast("Error al buscar el sensor: " + e.getMessage()));
@@ -168,68 +243,25 @@ public class SensorActivity extends AppCompatActivity {
             descripcionEditText.setText(sensorSeleccionado.getDescripcion());
             idealEditText.setText(String.valueOf(sensorSeleccionado.getIdeal()));
 
-            spinnerTipoSensor.setSelection(obtenerPosicionSpinner(spinnerTipoSensor, sensorSeleccionado.getTipoSensor()));
-            spinnerUbicacion.setSelection(obtenerPosicionSpinner(spinnerUbicacion, sensorSeleccionado.getUbicacion()));
+            int tipoSensorPos = obtenerPosicionSpinner(spinnerTipoSensor, sensorSeleccionado.getTipoSensor());
+            int ubicacionPos = obtenerPosicionSpinner(spinnerUbicacion, sensorSeleccionado.getUbicacion());
+
+            if (tipoSensorPos >= 0) {
+                spinnerTipoSensor.setSelection(tipoSensorPos);
+            } else {
+                mostrarToast("Tipo de sensor no encontrado en el spinner");
+            }
+
+            if (ubicacionPos >= 0) {
+                spinnerUbicacion.setSelection(ubicacionPos);
+            } else {
+                mostrarToast("Ubicación no encontrada en el spinner");
+            }
+        } else {
+            mostrarToast("No se encontraron datos para rellenar el formulario");
         }
     }
 
-    private void modificarSensor() {
-        if (sensorSeleccionado == null) {
-            mostrarToast("No se ha seleccionado un sensor para modificar");
-            return;
-        }
-
-        String nombre = nombreEditText.getText().toString().trim();
-        String descripcion = descripcionEditText.getText().toString().trim();
-        String idealStr = idealEditText.getText().toString().trim();
-
-        if (!validarNombre(nombre) || !validarDescripcion(descripcion) || !validarIdeal(idealStr)) {
-            return;
-        }
-
-        actualizarSensorSeleccionado(nombre, descripcion, idealStr);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("sensores")
-                .whereEqualTo("nombre", sensorSeleccionado.getNombre())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        db.collection("sensores").document(documentId)
-                                .set(sensorSeleccionado.toMap())
-                                .addOnSuccessListener(aVoid -> mostrarToast("Sensor modificado correctamente"))
-                                .addOnFailureListener(e -> mostrarToast("Error al modificar el sensor: " + e.getMessage()));
-                    } else {
-                        mostrarToast("El sensor no existe en la base de datos.");
-                    }
-                })
-                .addOnFailureListener(e -> mostrarToast("Error al realizar la consulta: " + e.getMessage()));
-    }
-
-    private void eliminarSensor() {
-        if (sensorSeleccionado == null) {
-            mostrarToast("No se ha seleccionado un sensor para eliminar");
-            return;
-        }
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("sensores")
-                .whereEqualTo("nombre", sensorSeleccionado.getNombre())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        String documentId = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        db.collection("sensores").document(documentId)
-                                .delete()
-                                .addOnSuccessListener(aVoid -> mostrarToast("Sensor eliminado correctamente"))
-                                .addOnFailureListener(e -> mostrarToast("Error al eliminar el sensor: " + e.getMessage()));
-                    } else {
-                        mostrarToast("El sensor no existe en la base de datos.");
-                    }
-                })
-                .addOnFailureListener(e -> mostrarToast("Error al realizar la consulta: " + e.getMessage()));
-    }
 
     private void actualizarSensorSeleccionado(String nombre, String descripcion, String idealStr) {
         sensorSeleccionado.setNombre(nombre);
@@ -244,8 +276,15 @@ public class SensorActivity extends AppCompatActivity {
         return adapter.getPosition(valor);
     }
 
+    private void resetFormulario() {
+        nombreEditText.setText("");
+        descripcionEditText.setText("");
+        idealEditText.setText("");
+        spinnerTipoSensor.setSelection(0);
+        spinnerUbicacion.setSelection(0);
+    }
+
     private void mostrarToast(String mensaje) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 }
-

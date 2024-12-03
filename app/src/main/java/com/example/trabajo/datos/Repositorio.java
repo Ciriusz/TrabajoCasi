@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.trabajo.adapters.SensoresAdapters;
 import com.example.trabajo.model.TipoSensor;
 import com.example.trabajo.model.Ubicacion;
 import com.example.trabajo.model.Sensor;
@@ -22,6 +23,7 @@ public class Repositorio {
     private List<TipoSensor> listaTipoSensor;
     private List<Ubicacion> listaUbicaciones;
     private List<Sensor> listaSensores;
+    private SensoresAdapters adaptador; // Adaptador conectado
 
     // Constructor
     protected Repositorio() {
@@ -47,6 +49,11 @@ public class Repositorio {
         return instance;
     }
 
+    // Configurar adaptador
+    public void setAdaptador(SensoresAdapters adaptador) {
+        this.adaptador = adaptador;
+    }
+
     // Obtener tipos de sensor
     public List<String> obtenerTiposSensor() {
         List<String> tipos = new ArrayList<>();
@@ -56,7 +63,7 @@ public class Repositorio {
         return tipos;
     }
 
-    // Interfaz para el callback
+    // Interfaz para el callback de ubicaciones
     public interface UbicacionesCallback {
         void onUbicacionesObtenidas(List<String> ubicaciones);
     }
@@ -103,6 +110,29 @@ public class Repositorio {
     // Agregar un sensor a la lista
     public void agregarSensor(Sensor sensor) {
         listaSensores.add(sensor);
+        if (adaptador != null) adaptador.actualizarLista(listaSensores); // Notificación al adaptador
+    }
+
+    // Eliminar un sensor de la lista
+    public void eliminarSensor(Sensor sensor) {
+        int index = listaSensores.indexOf(sensor);
+        if (index >= 0) {
+            listaSensores.remove(index);
+            if (adaptador != null) {
+                adaptador.actualizarLista(listaSensores); // Notificar al adaptador
+            }
+        }
+    }
+
+    // Actualizar un sensor en la lista
+    public void actualizarSensor(Sensor sensor) {
+        for (int i = 0; i < listaSensores.size(); i++) {
+            if (listaSensores.get(i).getNombre().equals(sensor.getNombre())) {
+                listaSensores.set(i, sensor);
+                if (adaptador != null) adaptador.notifyItemChanged(i);
+                break;
+            }
+        }
     }
 
     // Obtener lista de sensores para el adaptador

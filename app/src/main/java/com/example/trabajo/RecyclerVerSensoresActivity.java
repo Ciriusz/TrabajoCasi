@@ -14,6 +14,7 @@ import java.util.List;
 public class RecyclerVerSensoresActivity extends AppCompatActivity {
 
     private ListView sensoresListView;
+    private ArrayAdapter<Sensor> adapter; // Adaptador dinámico
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,13 +22,28 @@ public class RecyclerVerSensoresActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recycler_ver_sensores);
 
         // Inicializar ListView
-        sensoresListView = findViewById(R.id.sensoresListView); // Ahora usa el ID correcto del ListView
+        sensoresListView = findViewById(R.id.sensoresListView);
 
-        // Obtener la lista de sensores desde el Repositorio
+        // Configurar adaptador con lista dinámica de sensores
         List<Sensor> sensores = Repositorio.getInstance().obtenerSensores();
-
-        // Crear un adaptador para mostrar los sensores en la ListView
-        ArrayAdapter<Sensor> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sensores);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sensores);
         sensoresListView.setAdapter(adapter);
+
+        // Vincular adaptador dinámico al repositorio
+        configurarNotificacionCambios();
+    }
+
+    private void configurarNotificacionCambios() {
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        adapter.notifyDataSetChanged();
+        cargarSensores();
+    }
+    private void cargarSensores() {
+        sensoresListView = findViewById(R.id.sensoresListView);
     }
 }
